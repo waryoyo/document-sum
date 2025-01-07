@@ -1,0 +1,9 @@
+fastapi
+pymongo
+pydantic
+odmantic
+motor
+passlib
+python-jose[cryptography]
+bcrypt
+openai
