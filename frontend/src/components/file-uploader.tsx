@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, File, Upload } from "lucide-react";
+import apiClient from "@/api/apiClient";
 
 const allowedFileTypes = [
   "application/msword",
@@ -26,6 +27,23 @@ export function FileUpload() {
       alert("Please upload a valid file type (doc, docx, txt, or pdf)");
     }
   }, []);
+
+  const handleUpload = async () => {
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await apiClient.post("/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -89,17 +107,18 @@ export function FileUpload() {
                 variant="ghost"
                 size="icon"
                 onClick={removeFile}
-                className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
+                className="text-gray-500 hover:text-red-500"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
         )}
-
-        <Button className="w-full mt-4">
-          {file ? "Upload File" : "Select File"}
-        </Button>
+        {file && (
+          <Button className="w-full mt-4" onClick={handleUpload}>
+            Upload File
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
