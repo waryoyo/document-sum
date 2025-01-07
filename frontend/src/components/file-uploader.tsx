@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, File, Upload } from "lucide-react";
 import apiClient from "@/api/apiClient";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { AxiosError } from "axios";
 
 const allowedFileTypes = [
   "application/msword",
@@ -16,6 +19,7 @@ const allowedFileTypes = [
 
 export function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
+  const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (
@@ -33,19 +37,48 @@ export function FileUpload() {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await apiClient.post("/api/upload", formData, {
+        const response = await apiClient.post("/api/document", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
         console.log(response.data);
+        setFile(null);
+        toast({
+          variant: "default",
+          title: "Upload Sucessful",
+          description: "Uploaded " + response.data.name + " successfully.",
+        });
       } catch (error) {
-        console.log(error);
+        if (error instanceof AxiosError) {
+          toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description:
+              error.response?.data?.message ||
+              "An error occurred during upload.",
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
+          });
+          console.error(
+            "Axios Error Details:",
+            error.response?.data || error.message
+          );
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Unexpected Error",
+            description: "Something went wrong.",
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
+          });
+          console.error("General Error Details:", error);
+        }
       }
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+  });
 
   const removeFile = () => setFile(null);
 
