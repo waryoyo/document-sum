@@ -1,6 +1,6 @@
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from models.FileDocument import FileDocument
+from models.file_document import FileDocument
 from config import MONGO_CONNECTION_STRING
 
 

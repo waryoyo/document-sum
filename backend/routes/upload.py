@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 
 from services.document_extractor import extract_text
-from models.FileDocument import FileDocument
+from models.file_document import FileDocument
 
 router = APIRouter()
 

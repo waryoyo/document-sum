@@ -9,6 +9,7 @@ import apiClient from "@/api/apiClient";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { AxiosError } from "axios";
+import { FilePreview } from "@/components/file-preview";
 
 const allowedFileTypes = [
   "application/msword",
@@ -19,6 +20,8 @@ const allowedFileTypes = [
 
 export function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
+  const [isUploaded, setIsUploaded] = useState(false);
+
   const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -43,7 +46,7 @@ export function FileUpload() {
           },
         });
         console.log(response.data);
-        setFile(null);
+        setIsUploaded(true);
         toast({
           variant: "default",
           title: "Upload Sucessful",
@@ -95,6 +98,10 @@ export function FileUpload() {
         return "FILE";
     }
   };
+
+  if (isUploaded && file) {
+    return <FilePreview file={file} />;
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">

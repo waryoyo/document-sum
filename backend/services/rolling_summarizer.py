@@ -1,7 +1,11 @@
 import openai
 from typing import Iterator
 
-openai.api_key = "YOUR_API_KEY"
+openai.api_key = "REMOVED"
+
+
+import openai
+from typing import Iterator, Tuple
 
 
 class RollingSummarizer:
@@ -10,16 +14,20 @@ class RollingSummarizer:
         self.chunk_word_limit = chunk_word_limit
         self.summary = ""
 
-    def _split_text(self, text: str) -> Iterator[str]:
+    def _split_text(self, text: str) -> Iterator[Tuple[int, int, str]]:
         words = text.split()
+        start_idx = 0
         chunk = []
-        for word in words:
+        for i, word in enumerate(words):
             chunk.append(word)
             if len(chunk) >= self.chunk_word_limit and word.endswith("."):
-                yield " ".join(chunk)
+                end_idx = i + 1  # +1 because end index is inclusive
+                yield start_idx, end_idx, " ".join(chunk)
+                start_idx = end_idx
                 chunk = []
         if chunk:
-            yield " ".join(chunk)
+            end_idx = len(words)
+            yield start_idx, end_idx, " ".join(chunk)
 
     def _summarize_chunk(self, chunk: str) -> str:
         prompt = f"""
@@ -43,9 +51,9 @@ Now summarize the following chunk:
             print(f"Error during OpenAI summarization: {e}")
             return ""
 
-    def summarize(self, text_iterator: Iterator[str]) -> str:
-        for chunk in text_iterator:
+    def summarize(self, text: str) -> Iterator[Tuple[int, int, str]]:
+        for start_idx, end_idx, chunk in self._split_text(text):
             summary_part = self._summarize_chunk(chunk)
             if summary_part:
                 self.summary += f" {summary_part}"
-        return self.summary.strip()
+                yield start_idx, end_idx, summary_part
