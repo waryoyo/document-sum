@@ -4,8 +4,8 @@ from pydantic import Field
 
 
 class FileDocument(Document):
-    name: Annotated[str, Indexed(unique=True)]
-    filepath: str = Field(..., repr=False)
+    name: str
+    filepath: Annotated[str, Indexed(unique=True)] = Field(..., repr=False)
     content_type: str
     size: int
     content: str

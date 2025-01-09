@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { BrowserRouter } from "react-router";
 import AppRouter from "@/router/AppRouter";
 import { Toaster } from "@/components/ui/toaster";
+import { pdfjs } from "react-pdf";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -5,8 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 interface FilePreviewProps {
   file: File;
@@ -15,6 +15,7 @@ interface FilePreviewProps {
 export function FilePreview({ file }: FilePreviewProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -36,9 +37,11 @@ export function FilePreview({ file }: FilePreviewProps) {
             <Document
               file={file}
               onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={console.error}
+              onError={console.error}
               className="flex justify-center"
             >
-              <Page pageNumber={pageNumber} />
+              <Page pageNumber={pageNumber} height={600} />
             </Document>
             <div className="flex justify-between items-center mt-4">
               <Button
@@ -64,7 +67,7 @@ export function FilePreview({ file }: FilePreviewProps) {
             <p className="text-center text-gray-500 dark:text-gray-400">
               Preview not available for {isDoc ? "Word" : "Text"} documents.
               <br />
-              Filename: {file.name}
+              file.name: {file.name}
             </p>
           </div>
         )}
