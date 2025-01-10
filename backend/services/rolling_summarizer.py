@@ -1,15 +1,16 @@
-import openai
+# import openai
 from typing import Iterator
-
-openai.api_key = "REMOVED"
-
-
-import openai
+from groq import Groq
 from typing import Iterator, Tuple
 
 
 class RollingSummarizer:
-    def __init__(self, model: str = "gpt-4o-mini", chunk_word_limit: int = 2048):
+    def __init__(
+        self, model: str = "llama-3.3-70b-versatile", chunk_word_limit: int = 2048
+    ):
+        self.client = Groq(
+            api_key="REMOVED"
+        )
         self.model = model
         self.chunk_word_limit = chunk_word_limit
         self.summary = ""
@@ -29,7 +30,7 @@ class RollingSummarizer:
             end_idx = len(words)
             yield start_idx, end_idx, " ".join(chunk)
 
-    def _summarize_chunk(self, chunk: str) -> str:
+    def _summarize_chunk(self, chunk: str) -> object:
         prompt = f"""
 Here is the previous summary:
 {self.summary}
@@ -38,7 +39,7 @@ Now summarize the following chunk:
 {chunk}
 """
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a summarization assistant."},
@@ -46,7 +47,7 @@ Now summarize the following chunk:
                 ],
                 temperature=0.1,
             )
-            return response["choices"][0]["message"]["content"].strip()
+            return response.choices[0].message
         except Exception as e:
             print(f"Error during OpenAI summarization: {e}")
             return ""
@@ -55,5 +56,5 @@ Now summarize the following chunk:
         for start_idx, end_idx, chunk in self._split_text(text):
             summary_part = self._summarize_chunk(chunk)
             if summary_part:
-                self.summary += f" {summary_part}"
-                yield start_idx, end_idx, summary_part
+                self.summary += f" {summary_part.content}"
+                yield (start_idx, end_idx, summary_part.content)

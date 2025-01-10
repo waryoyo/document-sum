@@ -8,7 +8,7 @@ from models.file_document import FileDocument
 
 
 class Summary(Document):
-    model_name: str
+    generation_model_name: str
     created_at: datetime
     summaries: List["SummaryChunk"]
     document_id: ObjectId

@@ -2,12 +2,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from routes.upload import router as upload_router
-from core.setup import start_beanie
+from routes.summarize import router as summarize_router
+
+from core.setup import setup_openai, start_beanie
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await start_beanie()
+    setup_openai()
     yield
 
 
@@ -31,3 +34,4 @@ async def health_check():
 
 
 app.include_router(upload_router, prefix="/api/document", tags=["Document"])
+app.include_router(summarize_router, prefix="/api/summarize", tags=["Summarize"])

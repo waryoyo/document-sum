@@ -41,7 +41,7 @@ export function FilePreview({ file }: FilePreviewProps) {
               onError={console.error}
               className="flex justify-center"
             >
-              <Page pageNumber={pageNumber} height={600} />
+              <Page pageNumber={pageNumber} height={500} />
             </Document>
             <div className="flex justify-between items-center mt-4">
               <Button

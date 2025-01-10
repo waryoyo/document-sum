@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { AxiosError } from "axios";
 import { FilePreview } from "@/components/file-preview";
+import { LoadingAnimation } from "@/components/loading-spinner";
+import { useNavigate } from "react-router";
 
 const allowedFileTypes = [
   "application/msword",
@@ -20,10 +22,11 @@ const allowedFileTypes = [
 
 export function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
-
-  const [isUploaded, setIsUploaded] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (
@@ -38,6 +41,9 @@ export function FileUpload() {
 
   const handleUpload = async () => {
     if (file) {
+      setIsUploading(true);
+      setUploadStatus("Uploading file...");
+
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -46,15 +52,29 @@ export function FileUpload() {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log(response.data);
-        setIsUploaded(true);
+        setUploadStatus("Generating summary...");
+
+        const summaryResponse = await apiClient.get(
+          "/api/summarize/create/" + response.data._id,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log(summaryResponse.data);
         setFile(null);
+        setIsUploading(false);
+        navigate("/summary/" + summaryResponse.data.summary_id);
         toast({
           variant: "default",
           title: "Upload Sucessful",
           description: "Uploaded " + response.data.name + " successfully.",
         });
       } catch (error) {
+        setIsUploading(false);
+
         if (error instanceof AxiosError) {
           toast({
             variant: "destructive",
@@ -104,6 +124,9 @@ export function FileUpload() {
   // if (isUploaded && file) {
   //   return <FilePreview file={getFileBytes(file)} fileName={file.name} fileType={file.type} />;
   // }
+  if (isUploading) {
+    return <LoadingAnimation text={uploadStatus} />;
+  }
 
   return (
     <div className="flex flex-col md:flex-row items-start gap-6 w-full max-w-4xl mx-auto">
