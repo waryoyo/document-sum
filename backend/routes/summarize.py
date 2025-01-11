@@ -1,11 +1,32 @@
+from typing import List
 from fastapi import APIRouter, HTTPException
 from beanie import PydanticObjectId as ObjectId
 from models.summary import Summary, SummaryChunk
+from schemas.summary import SummaryResponse
 from services.rolling_summarizer import RollingSummarizer
 from models.file_document import FileDocument
 from datetime import datetime
+from pydantic import create_model
 
 router = APIRouter()
+
+
+# Consider using projections in future
+@router.get("/", response_model=List[SummaryResponse])
+async def get_summaries_list():
+    try:
+        DocumentNameProjection = create_model("documentName", name=(str, ...))
+
+        summaries = await Summary.find_all().project(SummaryResponse).to_list()
+        for summary in summaries:
+            document = await FileDocument.find_one(
+                FileDocument.id == summary.document_id
+            ).project(DocumentNameProjection)
+            summary.document_name = document.name
+
+        return summaries
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error, {e}")
 
 
 @router.get("/{id}", response_model=Summary)

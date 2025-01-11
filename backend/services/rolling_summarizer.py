@@ -2,6 +2,7 @@
 from typing import Iterator
 from groq import Groq
 from typing import Iterator, Tuple
+from tokenizers import Tokenizer
 
 
 class RollingSummarizer:
@@ -14,6 +15,7 @@ class RollingSummarizer:
         self.model = model
         self.chunk_word_limit = chunk_word_limit
         self.summary = ""
+        self.tokenizer = Tokenizer.from_pretrained("unsloth/Llama-3.3-70B-Instruct")
 
     def _split_text(self, text: str) -> Iterator[Tuple[int, int, str]]:
         words = text.split()
