@@ -5,8 +5,10 @@ from beanie import PydanticObjectId as ObjectId
 
 
 class SummaryResponse(BaseModel, extra="ignore"):
-    _id: ObjectId
-    generation_model_name: str
+    id: ObjectId
+    title: str
+    description: str
+    model_name: str
     created_at: datetime
     document_id: ObjectId
-    document_name: Optional[str] = ""
+    document_name: str

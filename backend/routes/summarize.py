@@ -1,12 +1,13 @@
 from typing import List
 from fastapi import APIRouter, HTTPException
 from beanie import PydanticObjectId as ObjectId
-from models.summary import Summary, SummaryChunk
+from projections.file_document import FileDocumentNameView
+from projections.summary import SummaryShortView
+from models.summary import Summary, SummaryChunk, SummaryMetadata
 from schemas.summary import SummaryResponse
 from services.rolling_summarizer import RollingSummarizer
 from models.file_document import FileDocument
 from datetime import datetime
-from pydantic import create_model
 
 router = APIRouter()
 
@@ -15,14 +16,20 @@ router = APIRouter()
 @router.get("/", response_model=List[SummaryResponse])
 async def get_summaries_list():
     try:
-        DocumentNameProjection = create_model("documentName", name=(str, ...))
+        summaries: List[SummaryResponse] = []
+        summaries_views = await Summary.find_all().project(SummaryShortView).to_list()
 
-        summaries = await Summary.find_all().project(SummaryResponse).to_list()
-        for summary in summaries:
+        for summary_view in summaries_views:
             document = await FileDocument.find_one(
-                FileDocument.id == summary.document_id
-            ).project(DocumentNameProjection)
-            summary.document_name = document.name
+                FileDocument.id == summary_view.document_id
+            ).project(FileDocumentNameView)
+
+            summary = SummaryResponse(
+                **summary_view.model_dump(exclude={"generation_model_name"}),
+                document_name=document.name,
+                model_name=summary_view.generation_model_name,
+            )
+            summaries.append(summary)
 
         return summaries
     except Exception as e:
@@ -48,19 +55,25 @@ async def summarize_document(document_id: ObjectId):
             raise HTTPException(status_code=404, detail="Document not found")
 
         rolling_summarizer = RollingSummarizer()
+        summary_chunks = []
 
+        for start, end, chunk_summary in rolling_summarizer.summarize(document.content):
+            summary_chunks.append(
+                SummaryChunk(start=start, end=end, text=chunk_summary)
+            )
+        summary_details = rolling_summarizer.obtain_title_description()
         summary = Summary(
             generation_model_name=rolling_summarizer.model,
             created_at=datetime.now(),
-            summaries=[],
+            summaries=summary_chunks,
             document_id=document_id,
+            title=summary_details.title,
+            description=summary_details.description,
+            summary_metadata=SummaryMetadata(
+                total_input_tokens=rolling_summarizer.total_input_tokens,
+                total_output_tokens=rolling_summarizer.total_output_tokens,
+            ),
         )
-
-        for start, end, chunk_summary in rolling_summarizer.summarize(document.content):
-            summary.summaries.append(
-                SummaryChunk(start=start, end=end, text=chunk_summary)
-            )
-
         summary = await summary.insert()
 
         return {"summary_id": str(summary.id)}

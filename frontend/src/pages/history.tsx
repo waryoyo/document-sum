@@ -7,36 +7,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 import apiClient from "@/api/apiClient";
+import { Button } from "@/components/ui/button";
+import { LoadingAnimation } from "@/components/loading-spinner";
+import { useNavigate } from "react-router";
 
 interface HistoryItem {
   id: number;
-  summaryTitle: string;
-  summary: string;
-  document: string;
-  createdAt: string;
-  model: string;
+  title: string;
+  document_id: string;
+  document_name: string;
+  created_at: string;
+  model_name: string;
 }
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-export function HistoryList() {
+export function HistoryPage() {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const { data, status } = await apiClient.get<HistoryItem[]>("/history");
+        const { data, status } = await apiClient.get<HistoryItem[]>(
+          "/api/summarize"
+        );
 
         if (status !== 200) {
-          setError("Failed to fetch history items.");
+          console.error("Failed to fetch history items.");
           return;
         }
         setHistoryItems(data);
       } catch (err) {
-        setError("An error occurred while fetching the history.");
+        console.error("An error occurred while fetching the history.");
       } finally {
         setIsLoading(false);
       }
@@ -45,8 +49,25 @@ export function HistoryList() {
     fetchHistory();
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (isLoading)
+    return <LoadingAnimation text={"loading...."}></LoadingAnimation>;
+
+  if (historyItems.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8">
+        <p className="text-lg font-medium text-muted-foreground">
+          No summaries have been created yet.
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => navigate("/")}
+        >
+          Go back home
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Table>
@@ -61,7 +82,34 @@ export function HistoryList() {
       </TableHeader>
       <TableBody>
         {historyItems.map((item) => (
-          <TableRow key={item.id}></TableRow>
+          <TableRow key={item.id}>
+            <TableCell className="font-medium">
+              {item.title ?? "No Title Available"}
+            </TableCell>
+            <TableCell>
+              <Button variant="ghost" asChild>
+                <a
+                  href={`${API_BASE_URL}/api/document/files/${item.document_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.document_name}
+                </a>
+              </Button>
+            </TableCell>
+            <TableCell>{new Date(item.created_at).toLocaleString()}</TableCell>
+            <TableCell>{item.model_name}</TableCell>
+            <TableCell>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  navigate(`/summary/${item.id}`);
+                }}
+              >
+                View Summary
+              </Button>
+            </TableCell>
+          </TableRow>
         ))}
       </TableBody>
     </Table>
