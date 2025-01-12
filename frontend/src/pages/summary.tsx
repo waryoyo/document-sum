@@ -13,9 +13,10 @@ import {
   atomDark,
   dracula,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import apiClient from "@/api/apiClient";
 import { LoadingAnimation } from "@/components/loading-spinner";
+import { Button } from "@/components/ui/button";
 
 interface Summary {
   text: string;
@@ -25,12 +26,12 @@ export default function SummaryPage() {
   const { summaryId } = useParams<{ summaryId: string }>();
   const [summaryData, setSummaryData] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSummary = async () => {
       if (!summaryId) {
-        setError("No document ID provided");
+        console.error("No document ID provided");
         setIsLoading(false);
         return;
       }
@@ -43,7 +44,6 @@ export default function SummaryPage() {
           .join("\n\n");
         setSummaryData(combinedSummary);
       } catch (err) {
-        setError("Failed to fetch summary data. Please try again later.");
         console.error("Error fetching summary:", err);
       } finally {
         setIsLoading(false);
@@ -58,43 +58,54 @@ export default function SummaryPage() {
   }
 
   return (
-    <div className="w-full flex items-center justify-center p-4">
-      <Card className="w-fit">
-        <CardHeader>
-          <CardTitle>Document Summary</CardTitle>
-          <CardDescription>
-            AI-generated summary of the uploaded document
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[70vh] max-w-[50vw] rounded-md border py-4 px-8 border-none prose dark:prose-invert">
-            <ReactMarkdown
-              components={{
-                code({ node, inline, className, children, ...props }: any) {
-                  const match = /language-(\w+)/.exec(className || "");
+    <div className="w-full flex flex-col items-center justify-center p-4 gap-y-4">
+      <div>
+        <Button
+          variant="outline"
+          className="mb-8"
+          onClick={() => {
+            navigate("/");
+          }}
+        >
+          Go back home
+        </Button>
+        <Card className="w-fit">
+          <CardHeader>
+            <CardTitle>Document Summary</CardTitle>
+            <CardDescription>
+              AI-generated summary of the uploaded document
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="max-h-[60vh] max-w-[50vw] rounded-md border py-4 px-8 border-none prose dark:prose-invert">
+              <ReactMarkdown
+                components={{
+                  code({ node, inline, className, children, ...props }: any) {
+                    const match = /language-(\w+)/.exec(className || "");
 
-                  return !inline && match ? (
-                    <SyntaxHighlighter
-                      style={dracula}
-                      PreTag="div"
-                      language={match[1]}
-                      {...props}
-                    >
-                      {String(children).replace(/\n$/, "")}
-                    </SyntaxHighlighter>
-                  ) : (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-              }}
-            >
-              {summaryData}
-            </ReactMarkdown>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={dracula}
+                        PreTag="div"
+                        language={match[1]}
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              >
+                {summaryData}
+              </ReactMarkdown>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

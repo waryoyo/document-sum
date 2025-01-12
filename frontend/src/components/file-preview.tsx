@@ -1,21 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { LoadingAnimation } from "./loading-spinner";
 
 interface FilePreviewProps {
   file: File;
 }
 
 export function FilePreview({ file }: FilePreviewProps) {
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+  const [text, setText] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -27,6 +34,23 @@ export function FilePreview({ file }: FilePreviewProps) {
     file.type ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   const isTxt = file.type === "text/plain";
+
+  useEffect(() => {
+    if (isTxt) {
+      extractText(file);
+    }
+  }, [file, isTxt]);
+
+  const extractText = async (file: File) => {
+    setLoading(true);
+    const text = await file.text();
+    setText(text);
+    setLoading(false);
+  };
+
+  if (loading) {
+    return <LoadingAnimation text={"Loading..."}></LoadingAnimation>;
+  }
 
   return (
     <Card className="w-full max-w-3xl mx-auto">
@@ -62,10 +86,41 @@ export function FilePreview({ file }: FilePreviewProps) {
             </div>
           </div>
         )}
-        {(isDoc || isTxt) && (
+
+        {isTxt && (
+          <ScrollArea className="max-h-[40vh] overflow-y-scroll rounded-md border py-4 px-8 border-none prose dark:prose-invert">
+            <ReactMarkdown
+              className="max-h-[40vh]"
+              components={{
+                code({ node, inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || "");
+
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={dracula}
+                      PreTag="div"
+                      language={match[1]}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {text ?? "Loading..."}
+            </ReactMarkdown>
+          </ScrollArea>
+        )}
+
+        {isDoc && (
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
             <p className="text-center text-gray-500 dark:text-gray-400">
-              Preview not available for {isDoc ? "Word" : "Text"} documents.
+              Preview not available for Word documents.
               <br />
               file.name: {file.name}
             </p>

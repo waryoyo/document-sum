@@ -6,6 +6,8 @@ from routes.summarize import router as summarize_router
 
 from core.setup import setup_openai, start_beanie
 
+# TODO: consider adding a user system and tracking duplicate files also enforce strict limits on file sizes and do checks
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

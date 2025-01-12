@@ -22,6 +22,8 @@ interface HistoryItem {
 }
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+//TODO: make markdown viewer a reusable component
+
 export function HistoryPage() {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +56,7 @@ export function HistoryPage() {
 
   if (historyItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center p-8 w-full">
         <p className="text-lg font-medium text-muted-foreground">
           No summaries have been created yet.
         </p>

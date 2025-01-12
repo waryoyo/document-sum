@@ -12,6 +12,7 @@ import { AxiosError } from "axios";
 import { FilePreview } from "@/components/file-preview";
 import { LoadingAnimation } from "@/components/loading-spinner";
 import { useNavigate } from "react-router";
+import DocViewer from "react-doc-viewer";
 
 const allowedFileTypes = [
   "application/msword",
@@ -121,9 +122,6 @@ export function FileUpload() {
     }
   };
 
-  // if (isUploaded && file) {
-  //   return <FilePreview file={getFileBytes(file)} fileName={file.name} fileType={file.type} />;
-  // }
   if (isUploading) {
     return <LoadingAnimation text={uploadStatus} />;
   }
