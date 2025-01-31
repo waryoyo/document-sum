@@ -1,0 +1,21 @@
+{
+  "type": "json_schema",
+  "json_schema": {
+    "name": "response",
+    "strict": true,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "symptoms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of symptoms to help in diagnosis"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["symptoms"]
+    }
+  }
+}

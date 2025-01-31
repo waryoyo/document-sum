@@ -7,7 +7,7 @@ import { Navigate, Route, Routes } from "react-router";
 
 function AppRouter() {
   return (
-    <div className="flex flex-col min-h-screen w-screen">
+    <div className="flex flex-col min-h-screen w-screen overflow-y-scroll">
       <Header />
       <div className="flex-grow w-full">
         <Routes>

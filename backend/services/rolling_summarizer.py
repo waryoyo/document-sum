@@ -16,9 +16,7 @@ class RollingSummarizer:
     def __init__(
         self, model: str = "llama-3.3-70b-versatile", chunk_word_limit: int = 2048
     ):
-        self.client = Groq(
-            api_key="REMOVED"
-        )
+        self.client = Groq(api_key="put_Api_key")
         self.model = model
         self.chunk_word_limit = chunk_word_limit
         self.summary = ""

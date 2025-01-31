@@ -12,7 +12,6 @@ import { AxiosError } from "axios";
 import { FilePreview } from "@/components/file-preview";
 import { LoadingAnimation } from "@/components/loading-spinner";
 import { useNavigate } from "react-router";
-import DocViewer from "react-doc-viewer";
 
 const allowedFileTypes = [
   "application/msword",
@@ -158,7 +157,7 @@ export function FileUpload() {
                     <File className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-sm font-medium w-64 text-gray-900 dark:text-gray-100 truncate">
                       {file.name}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">

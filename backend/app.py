@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
+from core.connection_manager import ConnectionManager
 from routes.upload import router as upload_router
 from routes.summarize import router as summarize_router
 

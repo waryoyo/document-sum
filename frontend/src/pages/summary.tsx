@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router";
 import apiClient from "@/api/apiClient";
 import { LoadingAnimation } from "@/components/loading-spinner";
 import { Button } from "@/components/ui/button";
+import { MarkdownViewer } from "@/components/markdown-viewer";
 
 interface Summary {
   text: string;
@@ -69,39 +70,18 @@ export default function SummaryPage() {
         >
           Go back home
         </Button>
-        <Card className="w-fit">
+        <Card className="min-w-[50vw]">
           <CardHeader>
             <CardTitle>Document Summary</CardTitle>
             <CardDescription>
               AI-generated summary of the uploaded document
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="max-h-[60vh] max-w-[50vw] rounded-md border py-4 px-8 border-none prose dark:prose-invert">
-              <ReactMarkdown
-                components={{
-                  code({ node, inline, className, children, ...props }: any) {
-                    const match = /language-(\w+)/.exec(className || "");
-
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={dracula}
-                        PreTag="div"
-                        language={match[1]}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, "")}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              >
-                {summaryData}
-              </ReactMarkdown>
+          <CardContent className="w-full">
+            <ScrollArea
+              className={`h-[50vh] rounded-md border py-4 px-8 border-none`}
+            >
+              <MarkdownViewer text={summaryData} />
             </ScrollArea>
           </CardContent>
         </Card>

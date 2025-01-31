@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { LoadingAnimation } from "./loading-spinner";
+import { MarkdownViewer } from "@/components/markdown-viewer";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface FilePreviewProps {
   file: File;
@@ -88,32 +86,10 @@ export function FilePreview({ file }: FilePreviewProps) {
         )}
 
         {isTxt && (
-          <ScrollArea className="max-h-[40vh] overflow-y-scroll rounded-md border py-4 px-8 border-none prose dark:prose-invert">
-            <ReactMarkdown
-              className="max-h-[40vh]"
-              components={{
-                code({ node, inline, className, children, ...props }: any) {
-                  const match = /language-(\w+)/.exec(className || "");
-
-                  return !inline && match ? (
-                    <SyntaxHighlighter
-                      style={dracula}
-                      PreTag="div"
-                      language={match[1]}
-                      {...props}
-                    >
-                      {String(children).replace(/\n$/, "")}
-                    </SyntaxHighlighter>
-                  ) : (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-              }}
-            >
-              {text ?? "Loading..."}
-            </ReactMarkdown>
+          <ScrollArea
+            className={`h-[40vh] rounded-md border py-0 px-0 border-none`}
+          >
+            <MarkdownViewer text={text ?? ""} />
           </ScrollArea>
         )}
 
